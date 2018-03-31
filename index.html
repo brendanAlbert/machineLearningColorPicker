@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <input type="color" value="#ff0000"/>
+    <div id="example" style="height: 200px; font-size: 40px; padding-top: 30px; line-height: 50px; vertical-align: middle; text-align: center;">Example Text</div>
+
+    <!-- brain.js and getRGB helper function -->
+    <script src="https://unpkg.com/brain.js@1.1.2/browser.min.js"></script>
+    <script>
+        function getRgb(hex) {
+            var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+                return r + r + g + g + b + b;
+            });
+
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: Math.round(parseInt(result[1], 16) / 2.55) / 100,
+                g: Math.round(parseInt(result[2], 16) / 2.55) / 100,
+                b: Math.round(parseInt(result[3], 16) / 2.55) / 100,
+
+            }: null;
+        }
+    </script>
+    
+    <!-- my app! -->
+    <script>
+        const input = document.querySelector("input")
+        const example = document.querySelector("#example")
+
+        //const brain = require('brain.js')
+
+        const network = new brain.NeuralNetwork()
+
+        network.train([
+            { input: { r: 0.62, g: 0.72, b: 0.88 }, output: { light: 1 } },
+            { input: { r: 0.1, g: 0.84, b: 0.72 }, output: { light: 1 } },
+            { input: { r: 0.33, g: 0.24, b: 0.29 }, output: { dark: 1 } },
+            { input: { r: 0.74, g: 0.78, b: 0.86 }, output: { light: 1 } },
+            { input: { r: 0.31, g: 0.35, b: 0.41 }, output: { dark: 1 } },
+            { input: { r: 0.91, g: 1, b: 0 }, output: { light: 1 } },
+        ])
+
+        input.addEventListener("change", e => {
+            const rgb = getRgb(e.target.value)
+            //const result = network.run(rgb)
+            const result = brain.likely(rgb, network)
+            console.log(result)
+            console.log(rgb)
+            example.style.background = e.target.value
+            example.style.color = result === "dark" ? "white" : "black" ;
+        })
+    </script>
+</body>
+</html>
